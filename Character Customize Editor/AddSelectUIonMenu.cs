@@ -128,7 +128,6 @@ namespace Character_Customize_Editor
         [HarmonyPrefix, HarmonyPatch(typeof(Menu_NewGameCEO), "LoadData")]
         public static bool CCE_LoadExistingCharacter(Menu_NewGameCEO __instance, GameObject ___character)
         {
-            Debug.Log("CHECKING... Menu_NewGameCEO.LoadData " + ___character.name);
             if (IsCCE(__instance.gameObject) == false) { return true; }
 
             GameObject chara = clonedCharacterObject;
@@ -188,45 +187,6 @@ namespace Character_Customize_Editor
             Debug.Log("CHECKING... Menu_NewGameCEO.LoadData END");
             return false;
         }
-
-        /*
-        /// <summary>
-        /// これは生成時の処理のため、最初の初期化の際に、指定したcharacterScriptをCharacter Customize Editorに渡したほうがいい。これはやめる。
-        /// </summary>
-        /// <param name="__instance"></param>
-        /// <param name="___character"></param>
-        /// <param name="___cS_"></param>
-        /// <param name="___mS_"></param>
-        /// <param name="___camRotate"></param>
-        /// <returns></returns>
-        [HarmonyPrefix, HarmonyPatch(typeof(Menu_NewGameCEO), "CreateChar")]
-        public static bool Menu_NewGameCEO_CreateChar_Prefix(Menu_NewGameCEO __instance, GameObject ___character,
-                                        characterScript ___cS_, mainScript ___mS_, float ___camRotate)
-        {
-            if (IsCCE(__instance.gameObject) == false) { return true; }
-
-            if (___character)
-            {
-                UnityEngine.Object.Destroy(___character);
-            }
-            ___cS_ = ___mS_.CreatePlayer(__instance.male, __instance.body, __instance.eyes, __instance.hair, __instance.beard, __instance.colorSkin, __instance.colorHair, __instance.colorHair, __instance.colorHose, __instance.colorShirt, __instance.colorAdd1);
-            ___character = clonedCharacterObject.transform.GetChild(0).gameObject;
-            ___character.name = "CHARNEWGAME";
-            ___character.transform.position = new Vector3(0f, 0f, 0f);
-            ___character.transform.eulerAngles = new Vector3(0f, ___camRotate, 0f);
-            //SetLayer
-            Traverse.Create(__instance).Method("SetLayer", new object[] { 4, ___character.transform }).GetValue();
-            ___character.GetComponent<Animator>().CrossFade("idle", 0.1f, 0, 0f, 0.4f);
-
-            //UnityEngine.Object.Destroy(___cS_.gameObject);
-
-            return false;
-        }
-        */
-
-
-
-
 
         /// <summary>
         /// セーブデータをロードしたときに呼ばれる初期化関数

@@ -13,10 +13,13 @@ namespace Character_Customize_Editor
 
         static public GameObject cameraNewGame;
         // --------------------- 以下、Harmonyのパッチ関数 ---------------------
-        
+
         public static void Init()
         {
-            cameraNewGame = GameObject.Find("CameraNewGame").gameObject;
+            GameObject original = GameObject.Find("CameraNewGame").gameObject;
+            //クローン化
+            cameraNewGame = GameObject.Instantiate(original);
+            cameraNewGame.name = "Character_Customize_Editor_Camera";
             DontDestroyOnLoad(cameraNewGame);
         }
         /// <summary>

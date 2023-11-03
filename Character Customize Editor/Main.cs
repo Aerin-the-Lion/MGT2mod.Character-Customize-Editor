@@ -20,7 +20,7 @@ namespace Character_Customize_Editor
     {
         public const string PluginGuid = "me.Aerin_the_Lion.Mad_Games_Tycoon_2.plugins.Character_Customize_Editor";
         public const string PluginName = "Character Customize Editor";
-        public const string PluginVersion = "0.0.0.1";
+        public const string PluginVersion = "1.0.0.0";
 
         public static ConfigEntry<bool> CFG_IS_ENABLED { get; private set; }
         public void LoadConfig()

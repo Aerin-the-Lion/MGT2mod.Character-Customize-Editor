@@ -11,6 +11,8 @@ using UnityEngine.UI;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.ComponentModel;
+using static UnityEngine.UI.Image;
 
 namespace Character_Customize_Editor
 {
@@ -20,15 +22,27 @@ namespace Character_Customize_Editor
         static public GameObject CC_Editor;
         static public int hierarchyIndex;
 
+        static bool IsExistedCCE()
+        {
+            Transform parentTransform = GameObject.Find("CanvasInGameMenu").transform;
+            Transform existingCC_EditorTransform = parentTransform.Find("Character Customize Editor");
+            if (existingCC_EditorTransform == null) 
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Character Customize Editorを設置する関数
         /// in English: A function to place Character Customize Editor
         /// </summary>
         static void SetCC_Editor()
         {
-            Transform parentTransform = GameObject.Find("CanvasInGameMenu").transform;
-            Transform existingCC_EditorTransform = parentTransform.Find("Character Customize Editor");
-            if (existingCC_EditorTransform != null) { return; }            // selectCCE_Buttonが既に存在している場合、早期リターン
+            if (IsExistedCCE()) { return; }            // selectCCE_Buttonが既に存在している場合、早期リターン
 
             Debug.Log("TESTing... CC_Editor Init TESTing...");
             //__instanceをクローン化
@@ -87,14 +101,14 @@ namespace Character_Customize_Editor
             return result;
         }
 
-        static GameObject GetPrehabMaterialOfCharacter(Menu_NewGameCEO cCE, characterScript original)
+        static GameObject GetPrehabMaterialOfCharacter(Menu_NewGameCEO cCE, int bodyType)
         {
             Debug.Log("GetPrehabMaterialOfCharacter()");
             createCharScript cCS_ = Traverse.Create(cCE).Field<createCharScript>("cCS_").Value;
 
             GameObject prehab = null;
-            int index = FindPrehabIndexOfCharacter(original.gameObject);
-            if (original.male)
+            int index = bodyType;
+            if (cCE.male)
             {
                 prehab = cCS_.charGfxMales[index] ;
             }
@@ -106,55 +120,68 @@ namespace Character_Customize_Editor
             return prehab;
         }
 
+        static void ImportNewModelSetting(Menu_NewGameCEO cCE, characterScript original)
+        {
+            original.male = cCE.male;
+            original.model_body = cCE.body;
+            original.model_eyes = cCE.eyes;
+            original.model_hair = cCE.hair;
+            original.model_beard = cCE.beard;
+            original.model_skinColor = cCE.colorSkin;
+            original.model_hairColor = cCE.colorHair;
+            original.model_beardColor = cCE.colorHair;
+            original.model_HoseColor = cCE.colorHose;
+            original.model_ShirtColor = cCE.colorShirt;
+            original.model_Add1Color = cCE.colorAdd1;
+        }
+        static void ImportMovementScript(movementScript oldMovementScript, characterScript original, GameObject newPrehab)
+        {
+            movementScript movementScript = original.gameObject.GetComponent<movementScript>();
+            GameObject main_ = GameObject.FindWithTag("Main");
+            movementScript.main_ = main_;
+            movementScript.mS_ = main_.GetComponent<mainScript>();
+            movementScript.cS_ = original;
+            movementScript.sfx_ = GameObject.Find("SFX").GetComponent<sfxScript>();
+            movementScript.clipS_ = main_.GetComponent<clipScript>();
+            movementScript.mapS_ = main_.GetComponent<mapScript>();
+            //Traverse.Create(movementScript).Method("Init").GetValue();
+
+            movementScript.charGFX = newPrehab;
+            movementScript.charAnimation = movementScript.charGFX.GetComponent<Animator>();
+            Traverse.Create(movementScript).Method("InitPathfinding").GetValue();
+        }
+
         static void SetCreatedToOriginalCharacter()
         {
             characterScript original = AddSelectUIonMenu.personalCharacterScript;
+            GameObject originalObj = original.gameObject;
             Menu_NewGameCEO cCE = AddSelectUIonMenu.CCE_instance.GetComponent<Menu_NewGameCEO>();
-            characterGFXScript orgGFX = original.gameObject.AddComponent<characterGFXScript>();
+            
+            GameObject oldPrehab = originalObj.transform.GetChild(0).gameObject;
+            //oldPrehabの位置情報を取得
+            Vector3 oldPrehabPosition = oldPrehab.transform.position;
+            //oldPrehabの回転情報を取得
+            Quaternion oldPrehabRotation = oldPrehab.transform.rotation;
+            //oldPrehabのスケール情報を取得
+            Vector3 oldPrehabScale = oldPrehab.transform.localScale;
+            //oldPrehabのmovementScriptを取得
+            movementScript oldMovementScript = oldPrehab.GetComponent<movementScript>();
 
-            GameObject prehabChara = GetPrehabMaterialOfCharacter(cCE, original);
-            characterGFXScript prehabGFX =  prehabChara.GetComponent<characterGFXScript>();
+            //新しいprehabを追加
+            int bodyType = cCE.body;
+            GameObject prehab = GetPrehabMaterialOfCharacter(cCE, bodyType);
+            GameObject newPrehab = UnityEngine.Object.Instantiate<GameObject>(prehab, oldPrehabPosition, oldPrehabRotation, originalObj.transform);
 
-            original.male = cCE.male;
-            orgGFX.male = cCE.male;
-            Traverse.Create(orgGFX).Field<clothScript>("clothScript_").Value = GameObject.FindGameObjectWithTag("Main").GetComponent<clothScript>();
-            Traverse.Create(orgGFX).Field<characterScript>("cS_").Value = original;
+            //新しいキャラクターモデルの設定を反映
+            ImportNewModelSetting(cCE, original);
+            ImportMovementScript(oldMovementScript, original, newPrehab);
+            characterGFXScript gFX = newPrehab.GetComponent<characterGFXScript>();
+            gFX.Init(true);
 
-            GameObject orgBoneHead = original.gameObject.transform.GetChild(0).Find("mixamorig:Head").gameObject;
-            foreach(Transform child in orgBoneHead.transform)
-            {
-                UnityEngine.Object.Destroy(child.gameObject);
-            }
-            GameObject orgObjectSkin = original.gameObject.transform.GetChild(0).Find("Add1").gameObject;
-            //foreach (Transform child in orgObjectSkin.transform)
-            //{
-                //UnityEngine.Object.Destroy(child.gameObject);
-            //}
-            //}
-
-            orgGFX.boneHead = orgBoneHead;
-            orgGFX.myMaterials = prehabGFX.myMaterials;
-            orgGFX.myMaterialSlots = prehabGFX.myMaterialSlots;
-            orgGFX.objectSkin = orgObjectSkin;
-            Debug.Log("1");
-            Traverse.Create(orgGFX).Method("SetEyes", new Type[] { typeof(bool), typeof(int) }).GetValue(true, cCE.eyes);
-            Debug.Log("2");
-            Traverse.Create(orgGFX).Method("SetHairs", new Type[] { typeof(bool), typeof(int) }).GetValue(true, cCE.hair);
-            Debug.Log("3");
-            Traverse.Create(orgGFX).Method("SetBeard", new Type[] { typeof(bool), typeof(int) }).GetValue(true, cCE.beard);
-            Debug.Log("4");
-            Traverse.Create(orgGFX).Method("SetSkinColor", new Type[] { typeof(bool), typeof(int) }).GetValue(true, cCE.colorSkin);
-            Debug.Log("5");
-            Traverse.Create(orgGFX).Method("SetHairColor", new Type[] { typeof(bool), typeof(int), typeof(int) }).GetValue(true, cCE.colorHair, cCE.colorHair);
-            Debug.Log("6");
-            Traverse.Create(orgGFX).Method("SetClothColors", new Type[] { typeof(bool), typeof(int), typeof(int), typeof(int) }).GetValue(true, cCE.colorHose, cCE.colorShirt, cCE.colorAdd1);
-            Debug.Log("7");
-            if (orgGFX.myMaterialSlots.Length != 0)
-            {
-                orgGFX.objectSkin.GetComponent<SkinnedMeshRenderer>().sharedMaterials = orgGFX.myMaterials;
-            }
-
+            //既存のprehabクローンを削除
+            UnityEngine.Object.Destroy(oldPrehab);
         }
+
         static void DisableCameraNewGame()
         {
             if (GetCameraNewGame.cameraNewGame)
