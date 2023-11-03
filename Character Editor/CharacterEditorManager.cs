@@ -1,32 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx;
-using BepInEx.Configuration;
-using UnityEngine;
+﻿using UnityEngine;
 using HarmonyLib;
 using UnityEngine.UI;
-using System.Runtime.CompilerServices;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.ComponentModel;
-using static UnityEngine.UI.Image;
 
-namespace Character_Customize_Editor
+namespace CharacterEditor
 {
-    public class CustomEditor: MonoBehaviour
+    public class CharacterEditorManager: MonoBehaviour
     {
         //static public bool isActivated = false;
-        static public GameObject CC_Editor;
+        static public GameObject CharacterEditor;
         static public int hierarchyIndex;
-
-        static bool IsExistedCCE()
+        static bool IsExistedCharacterEditor()
         {
             Transform parentTransform = GameObject.Find("CanvasInGameMenu").transform;
-            Transform existingCC_EditorTransform = parentTransform.Find("Character Customize Editor");
-            if (existingCC_EditorTransform == null) 
+            Transform existingCharacterEditorTransform = parentTransform.Find("Character Editor");
+            if (existingCharacterEditorTransform == null) 
             {
                 return false;
             }
@@ -37,24 +24,23 @@ namespace Character_Customize_Editor
         }
 
         /// <summary>
-        /// Character Customize Editorを設置する関数
-        /// in English: A function to place Character Customize Editor
+        /// Character Editorを設置する関数
+        /// in English: A function to place Character Editor
         /// </summary>
-        static void SetCC_Editor()
+        static void InitializeCharacterEditor()
         {
-            if (IsExistedCCE()) { return; }            // selectCCE_Buttonが既に存在している場合、早期リターン
+            if (IsExistedCharacterEditor()) { return; }            // selectCharacterEditor_Buttonが既に存在している場合、早期リターン
 
-            Debug.Log("TESTing... CC_Editor Init TESTing...");
             //__instanceをクローン化
             GameObject menu_NewGameCEO = GameObject.Find("CanvasInGameMenu").transform.Find("Menu_NewGame_S2").gameObject;
-            CC_Editor = UnityEngine.Object.Instantiate(menu_NewGameCEO);
-            CC_Editor.transform.SetParent(menu_NewGameCEO.transform.parent);
-            CC_Editor.transform.localPosition = menu_NewGameCEO.transform.localPosition;
-            CC_Editor.transform.localScale = menu_NewGameCEO.transform.localScale;
-            CC_Editor.name = "Character Customize Editor";
-            hierarchyIndex = GetHierarchyIndex(CC_Editor);
+            CharacterEditor = UnityEngine.Object.Instantiate(menu_NewGameCEO);
+            CharacterEditor.transform.SetParent(menu_NewGameCEO.transform.parent);
+            CharacterEditor.transform.localPosition = menu_NewGameCEO.transform.localPosition;
+            CharacterEditor.transform.localScale = menu_NewGameCEO.transform.localScale;
+            CharacterEditor.name = "Character Editor";
+            hierarchyIndex = GetHierarchyIndex(CharacterEditor);
 
-            ModifyCCE_Buttons(CC_Editor);
+            ModifyCharacterEditor_Buttons(CharacterEditor);
         }
 
         //Characterが使用しているPrehabを取得する関数
@@ -101,14 +87,13 @@ namespace Character_Customize_Editor
             return result;
         }
 
-        static GameObject GetPrehabMaterialOfCharacter(Menu_NewGameCEO cCE, int bodyType)
+        static GameObject GetPrehabMaterialOfCharacter(Menu_NewGameCEO CharacterEditor, int bodyType)
         {
-            Debug.Log("GetPrehabMaterialOfCharacter()");
-            createCharScript cCS_ = Traverse.Create(cCE).Field<createCharScript>("cCS_").Value;
+            createCharScript cCS_ = Traverse.Create(CharacterEditor).Field<createCharScript>("cCS_").Value;
 
             GameObject prehab = null;
             int index = bodyType;
-            if (cCE.male)
+            if (CharacterEditor.male)
             {
                 prehab = cCS_.charGfxMales[index] ;
             }
@@ -116,25 +101,24 @@ namespace Character_Customize_Editor
             {
                 prehab = cCS_.charGfxFemales[index];
             }
-            Debug.Log("prehabMat : " + prehab.name);
             return prehab;
         }
 
-        static void ImportNewModelSetting(Menu_NewGameCEO cCE, characterScript original)
+        static void ImportNewModelSetting(Menu_NewGameCEO CharacterEditor, characterScript original)
         {
-            original.male = cCE.male;
-            original.model_body = cCE.body;
-            original.model_eyes = cCE.eyes;
-            original.model_hair = cCE.hair;
-            original.model_beard = cCE.beard;
-            original.model_skinColor = cCE.colorSkin;
-            original.model_hairColor = cCE.colorHair;
-            original.model_beardColor = cCE.colorHair;
-            original.model_HoseColor = cCE.colorHose;
-            original.model_ShirtColor = cCE.colorShirt;
-            original.model_Add1Color = cCE.colorAdd1;
+            original.male = CharacterEditor.male;
+            original.model_body = CharacterEditor.body;
+            original.model_eyes = CharacterEditor.eyes;
+            original.model_hair = CharacterEditor.hair;
+            original.model_beard = CharacterEditor.beard;
+            original.model_skinColor = CharacterEditor.colorSkin;
+            original.model_hairColor = CharacterEditor.colorHair;
+            original.model_beardColor = CharacterEditor.colorHair;
+            original.model_HoseColor = CharacterEditor.colorHose;
+            original.model_ShirtColor = CharacterEditor.colorShirt;
+            original.model_Add1Color = CharacterEditor.colorAdd1;
         }
-        static void ImportMovementScript(movementScript oldMovementScript, characterScript original, GameObject newPrehab)
+        public static void ImportMovementScript(movementScript oldMovementScript, characterScript original, GameObject newPrehab)
         {
             movementScript movementScript = original.gameObject.GetComponent<movementScript>();
             GameObject main_ = GameObject.FindWithTag("Main");
@@ -151,11 +135,11 @@ namespace Character_Customize_Editor
             Traverse.Create(movementScript).Method("InitPathfinding").GetValue();
         }
 
-        static void SetCreatedToOriginalCharacter()
+        public static void SetCreatedToOriginalCharacter()
         {
-            characterScript original = AddSelectUIonMenu.personalCharacterScript;
+            characterScript original = CharacterSelectionMenu.personalCharacterScript;
             GameObject originalObj = original.gameObject;
-            Menu_NewGameCEO cCE = AddSelectUIonMenu.CCE_instance.GetComponent<Menu_NewGameCEO>();
+            Menu_NewGameCEO CharacterEditor = CharacterSelectionMenu.CharacterEditorInstance.GetComponent<Menu_NewGameCEO>();
             
             GameObject oldPrehab = originalObj.transform.GetChild(0).gameObject;
             //oldPrehabの位置情報を取得
@@ -168,12 +152,12 @@ namespace Character_Customize_Editor
             movementScript oldMovementScript = oldPrehab.GetComponent<movementScript>();
 
             //新しいprehabを追加
-            int bodyType = cCE.body;
-            GameObject prehab = GetPrehabMaterialOfCharacter(cCE, bodyType);
+            int bodyType = CharacterEditor.body;
+            GameObject prehab = GetPrehabMaterialOfCharacter(CharacterEditor, bodyType);
             GameObject newPrehab = UnityEngine.Object.Instantiate<GameObject>(prehab, oldPrehabPosition, oldPrehabRotation, originalObj.transform);
 
             //新しいキャラクターモデルの設定を反映
-            ImportNewModelSetting(cCE, original);
+            ImportNewModelSetting(CharacterEditor, original);
             ImportMovementScript(oldMovementScript, original, newPrehab);
             characterGFXScript gFX = newPrehab.GetComponent<characterGFXScript>();
             gFX.Init(true);
@@ -182,49 +166,7 @@ namespace Character_Customize_Editor
             UnityEngine.Object.Destroy(oldPrehab);
         }
 
-        static void DisableCameraNewGame()
-        {
-            if (GetCameraNewGame.cameraNewGame)
-            {
-                GetCameraNewGame.cameraNewGame.SetActive(false);
-            }
-        }
-
-        static void OnButton_YesClicked()
-        {
-            Debug.Log(" -- Button_Yes was clicked -- ");
-            DisableCameraNewGame();
-            SetCreatedToOriginalCharacter();
-            GameObject canvasInGameMenu = GameObject.Find("CanvasInGameMenu").gameObject;
-            canvasInGameMenu.transform.GetChild(hierarchyIndex).gameObject.SetActive(false);
-            DestroyGameObjectIfExists("CHARNEWGAME");
-        }
-
-        static void OnButton_CloseClicked()
-        {
-            Debug.Log(" -- Button_Close was clicked -- ");
-            DisableCameraNewGame();
-            GameObject canvasInGameMenu = GameObject.Find("CanvasInGameMenu").gameObject;
-            canvasInGameMenu.transform.GetChild(hierarchyIndex).gameObject.SetActive(false);
-            DestroyGameObjectIfExists("CHARNEWGAME");
-            /*
-            GameObject charaNewGame;
-            try
-            {
-                charaNewGame = GameObject.Find("CHARNEWGAME").gameObject;
-                UnityEngine.Object.Destroy(charaNewGame);
-            }catch{}
-
-            try
-            {
-                UnityEngine.Object.Destroy(AddSelectUIonMenu.clonedCharacterObject);
-            }
-            catch { }
-            */
-
-        }
-
-        static void DestroyGameObjectIfExists(string name)
+        public static void DestroyGameObjectIfExists(string name)
         {
             GameObject obj = GameObject.Find(name);
             if (obj != null)
@@ -233,23 +175,23 @@ namespace Character_Customize_Editor
             }
         }
 
-        static void ModifyCCE_Buttons(GameObject CC_Editor)
+        static void ModifyCharacterEditor_Buttons(GameObject CharacterEditor)
         {
             //Button_Yes
-            GameObject Button_Yes = CC_Editor.transform.Find("WindowMain/Button_Yes").gameObject;
+            GameObject Button_Yes = CharacterEditor.transform.Find("WindowMain/Button_Yes").gameObject;
             Button Button_Yes_ButtonComponent = Button_Yes.GetComponent<Button>();
             //ボタンのコンポーネントのonClickを初期化
             Button_Yes_ButtonComponent.onClick = new Button.ButtonClickedEvent();
             //ボタンのコンポーネントのonClickに処理を追加
-            Button_Yes_ButtonComponent.onClick.AddListener(OnButton_YesClicked);
+            Button_Yes_ButtonComponent.onClick.AddListener(CharacterEditorButtonHandler.OnButton_YesClicked);
 
             //Button_Close
-            GameObject Button_Close = CC_Editor.transform.Find("WindowMain/Titelleiste/Button_Close").gameObject;
+            GameObject Button_Close = CharacterEditor.transform.Find("WindowMain/Titelleiste/Button_Close").gameObject;
             Button Button_Close_ButtonComponent = Button_Close.GetComponent<Button>();
             //ボタンのコンポーネントのonClickを初期化
             Button_Close_ButtonComponent.onClick = new Button.ButtonClickedEvent();
             //ボタンのコンポーネントのonClickに処理を追加
-            Button_Close_ButtonComponent.onClick.AddListener(OnButton_CloseClicked);
+            Button_Close_ButtonComponent.onClick.AddListener(CharacterEditorButtonHandler.OnButton_CloseClicked);
         }
 
         /// <summary>
@@ -273,32 +215,10 @@ namespace Character_Customize_Editor
             return -1;
         }
 
-        static void Init()
+        public static void Init()
         {
             if (!Main.CFG_IS_ENABLED.Value) { return; }
-            SetCC_Editor();
-        }
-
-        // --------------------- 以下、Harmonyのパッチ関数 ---------------------
-        /// <summary>
-        /// セーブデータをロードしたときに呼ばれる初期化関数
-        /// </summary>
-        /// <param name="__instance"></param>
-        [HarmonyPrefix, HarmonyPatch(typeof(savegameScript), "LoadTasks")]
-        public static void savegameScript_LoadTasks_Postfix(savegameScript __instance)
-        {
-            Init();
-        }
-
-        /// <summary>
-        /// New Gameメニューを開いたときに呼ばれる初期化関数
-        /// </summary>
-        /// <param name="__instance"></param>
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Menu_NewGame), "OnEnable")]
-        public static void Menu_NewGameCEO_Start_Postfix(Menu_NewGame __instance)
-        {
-            Init();
+            InitializeCharacterEditor();
         }
     }
 }

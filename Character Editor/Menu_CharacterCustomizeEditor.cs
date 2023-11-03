@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine.Events;
 
-namespace Character_Customize_Editor
+namespace CharacterEditor
 {
     public class Menu_CharacterCustomizeEditor
     {

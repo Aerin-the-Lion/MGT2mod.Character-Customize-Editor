@@ -1,0 +1,6 @@
+C:\Program Files (x86)\Steam\steamapps\common\Mad Games Tycoon 2\BepInEx\plugins\Character Editor.dll
+C:\Program Files (x86)\Steam\steamapps\common\Mad Games Tycoon 2\BepInEx\plugins\Character Editor.pdb
+C:\Users\admin\Documents\C#_Tool\MGT2mod.CharacterEditor\Character Editor\obj\Debug\Character Editor.csproj.AssemblyReference.cache
+C:\Users\admin\Documents\C#_Tool\MGT2mod.CharacterEditor\Character Editor\obj\Debug\Character Editor.csproj.CoreCompileInputs.cache
+C:\Users\admin\Documents\C#_Tool\MGT2mod.CharacterEditor\Character Editor\obj\Debug\Character Editor.dll
+C:\Users\admin\Documents\C#_Tool\MGT2mod.CharacterEditor\Character Editor\obj\Debug\Character Editor.pdb

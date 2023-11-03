@@ -7,8 +7,8 @@
     <ProjectGuid>{0460B703-A700-480D-8EB3-8284E165A025}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Character_Customize_Editor</RootNamespace>
-    <AssemblyName>Character Customize Editor</AssemblyName>
+    <RootNamespace>CharacterEditor</RootNamespace>
+    <AssemblyName>Character Editor</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -73,10 +73,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddSelectUIonMenu.cs" />
-    <Compile Include="GetCameraNewGame.cs" />
+    <Compile Include="CharacterSelectionMenu.cs" />
+    <Compile Include="CameraManager.cs" />
+    <Compile Include="CharacterEditorButtonHandler.cs" />
+    <Compile Include="CharacterSelectionMenuButtonHandler.cs" />
+    <Compile Include="IntializeHarmonyPatch.cs" />
     <Compile Include="Menu_CharacterCustomizeEditor.cs" />
-    <Compile Include="CustomEditor.cs" />
+    <Compile Include="CharacterEditorManager.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

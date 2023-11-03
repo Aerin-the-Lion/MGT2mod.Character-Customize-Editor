@@ -1,25 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using UnityEngine;
 using HarmonyLib;
-using UnityEngine.UI;
 
 
-// ILコードのIndexで処理箇所の指定しているので、別のMod、もしくはメインゲーム内でなにかしらの変更があった場合、
-// 動作しなくなるおそれがあります。
-namespace Character_Customize_Editor
+namespace CharacterEditor
 {
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
     [BepInProcess("Mad Games Tycoon 2.exe")]
     public class Main : BaseUnityPlugin
     {
-        public const string PluginGuid = "me.Aerin_the_Lion.Mad_Games_Tycoon_2.plugins.Character_Customize_Editor";
-        public const string PluginName = "Character Customize Editor";
+        public const string PluginGuid = "me.Aerin_the_Lion.Mad_Games_Tycoon_2.plugins.CharacterEditor";
+        public const string PluginName = "Character Editor";
         public const string PluginVersion = "1.0.0.0";
 
         public static ConfigEntry<bool> CFG_IS_ENABLED { get; private set; }
@@ -35,9 +27,12 @@ namespace Character_Customize_Editor
         void Awake()
         {
             LoadConfig();
-            Harmony.CreateAndPatchAll(typeof(CustomEditor));
-            Harmony.CreateAndPatchAll(typeof(AddSelectUIonMenu));
-            Harmony.CreateAndPatchAll(typeof(GetCameraNewGame));
+            Harmony.CreateAndPatchAll(typeof(CharacterEditorManager));
+            Harmony.CreateAndPatchAll(typeof(Menu_CharacterCustomizeEditor));
+            Harmony.CreateAndPatchAll(typeof(CharacterSelectionMenu));
+            Harmony.CreateAndPatchAll(typeof(CharacterSelectionMenuButtonHandler));
+            Harmony.CreateAndPatchAll(typeof(CameraManager));
+            Harmony.CreateAndPatchAll(typeof(IntializeHarmonyPatch));
 
         }
 
