@@ -78,7 +78,6 @@
     <Compile Include="CharacterEditorButtonHandler.cs" />
     <Compile Include="CharacterSelectionMenuButtonHandler.cs" />
     <Compile Include="IntializeHarmonyPatch.cs" />
-    <Compile Include="Menu_CharacterCustomizeEditor.cs" />
     <Compile Include="CharacterEditorManager.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

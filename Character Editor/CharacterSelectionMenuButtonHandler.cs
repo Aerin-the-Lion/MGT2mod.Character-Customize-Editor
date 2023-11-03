@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace CharacterEditor
 {
-    public class CharacterSelectionMenuButtonHandler
+    public class CharacterSelectionMenuButtonHandler: MonoBehaviour
     {
 
         private static GameObject originalSelectButton;
@@ -53,11 +53,13 @@ namespace CharacterEditor
         /// </summary>
         private static void OnSelectCharacterEditorButtonClicked()
         {
+            CharacterSelectionMenu.DeleteUnimplementedUI();
             CharacterSelectionMenu.SetClonedCharacter();
             CharacterSelectionMenu.InitializeCharacterEditorWithSelectedCharacter();
             CameraManager.EnableCamera();
             GameObject canvasInGameMenu = GameObject.Find("CanvasInGameMenu").gameObject;
             canvasInGameMenu.transform.GetChild(CharacterEditorManager.hierarchyIndex).gameObject.SetActive(true);
+            CharacterSelectionMenu.InitializeTitleOfCharacterEditor();  //何故かここに置かないとタイトル変わらない？SetActiveするたびにタイトルが初期化されるみたいです。
         }
 
         private static void SetButtonOnClickEvent(GameObject selectCharacterEditor_Button)

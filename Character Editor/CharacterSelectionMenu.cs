@@ -35,41 +35,19 @@ namespace CharacterEditor
             mainMenuScript.Init();
         }
 
-        /*
-        /// <summary>
-        /// 従業員メニューの個人メニューに、Character Editorを開くボタンを追加する関数
-        /// in English: Add a button to open Character Editor to the personal menu of the employee menu
-        /// </summary>
-        static void SetSelectCharacterEditor_Button()
+        public static void InitializeTitleOfCharacterEditor()
         {
-            // 既に存在するselectCharacterEditor_Buttonを探す
-            Transform parentTransform = GameObject.Find("CanvasInGameMenu").transform;
-            Transform menu_Personal_ViewTransform = parentTransform.Find("Menu_PersonalView/WindowMain");
-            Transform existingSelectCharacterEditor_ButtonTransform = menu_Personal_ViewTransform.Find("Button_Select_CharacterEditor");
-            if (existingSelectCharacterEditor_ButtonTransform != null) { return; }            // selectCharacterEditor_Buttonが既に存在している場合、早期リターン
-
-            //__instanceをクローン化
-            GameObject menu_PersonalView = GameObject.Find("CanvasInGameMenu").transform.Find("Menu_PersonalView").gameObject;
-            GameObject select_Button = menu_PersonalView.transform.Find("WindowMain").transform.Find("Button_Selektieren").gameObject;
-            GameObject selectCharacterEditor_Button = UnityEngine.Object.Instantiate(select_Button);
-
-            //クローン化したものの名前を変更
-            selectCharacterEditor_Button.name = "Button_Select_CharacterEditor";
-            //クローン化したものの親を変更
-            selectCharacterEditor_Button.transform.SetParent(select_Button.transform.parent);
-            //クローン化したものの位置を変更z
-            selectCharacterEditor_Button.transform.localScale = select_Button.transform.localScale;
-            selectCharacterEditor_Button.transform.localPosition = new Vector3(select_Button.transform.localPosition.x * 3.178f, 0, 0);
-
-            //Buttonをクリックしたときの処理を追加
-            //ボタンのコンポーネントを取得
-            Button selectCharacterEditor_ButtonComponent = selectCharacterEditor_Button.GetComponent<Button>();
-            //ボタンのコンポーネントのonClickを初期化
-            selectCharacterEditor_ButtonComponent.onClick = new Button.ButtonClickedEvent();
-            //ボタンのコンポーネントのonClickに処理を追加
-            selectCharacterEditor_ButtonComponent.onClick.AddListener(cEBHandler_.OnSelectCharacterEditorButtonClicked);
+            string title = "Character Editor : Customize your character";
+            CharacterEditorManager.CharacterEditor.transform.GetChild(0).GetChild(2).GetChild(0).gameObject.GetComponent<Text>().text = title;
         }
-        */
+        /// <summary>
+        /// まぁいつかは実装するけど……あったらあったで面倒なので、今は削除しておく
+        /// </summary>
+        public static void DeleteUnimplementedUI()
+        {
+            CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGStats").gameObject.SetActive(false);
+            CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGPerks").gameObject.SetActive(false);
+        }
 
         public static void Init()
         {

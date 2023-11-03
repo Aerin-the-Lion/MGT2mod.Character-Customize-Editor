@@ -12,7 +12,7 @@ namespace CharacterEditor
     {
         public const string PluginGuid = "me.Aerin_the_Lion.Mad_Games_Tycoon_2.plugins.CharacterEditor";
         public const string PluginName = "Character Editor";
-        public const string PluginVersion = "1.0.0.0";
+        public const string PluginVersion = "1.0.0.2";
 
         public static ConfigEntry<bool> CFG_IS_ENABLED { get; private set; }
         public void LoadConfig()
@@ -28,7 +28,6 @@ namespace CharacterEditor
         {
             LoadConfig();
             Harmony.CreateAndPatchAll(typeof(CharacterEditorManager));
-            Harmony.CreateAndPatchAll(typeof(Menu_CharacterCustomizeEditor));
             Harmony.CreateAndPatchAll(typeof(CharacterSelectionMenu));
             Harmony.CreateAndPatchAll(typeof(CharacterSelectionMenuButtonHandler));
             Harmony.CreateAndPatchAll(typeof(CameraManager));

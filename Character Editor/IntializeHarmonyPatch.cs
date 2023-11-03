@@ -39,7 +39,7 @@ namespace CharacterEditor
             CharacterSelectionMenu.Init();
         }
 
-        [HarmonyPostfix, HarmonyLib.HarmonyPatch(typeof(Menu_Start), "OnEnable")]
+        [HarmonyPostfix, HarmonyPatch(typeof(Menu_Start), "OnEnable")]
         public static void OnGameStart(splashScript __instance)
         {
             CameraManager.InitializeCamera();
