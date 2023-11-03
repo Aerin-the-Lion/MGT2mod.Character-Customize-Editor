@@ -55,6 +55,7 @@ namespace CharacterEditor
         public static void Menu_PersonalView_Start_Postfix(Menu_PersonalView __instance, characterScript ___cS_)
         {
             CharacterSelectionMenu.personalCharacterScript = ___cS_;
+            CharacterSelectionMenuButtonHandler.selectCharacterEditor_Button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = "Character Editor";
         }
     }
 }

@@ -13,6 +13,7 @@ namespace CharacterEditor
     {
 
         private static GameObject originalSelectButton;
+        public static GameObject selectCharacterEditor_Button;
         /// <summary>
         /// 従業員メニューの個人メニューに、Character Editorを開くボタンを追加する関数
         /// in English: Add a button to open Character Editor to the personal menu of the employee menu
@@ -21,7 +22,7 @@ namespace CharacterEditor
         {
             if (IsCharacterEditorButtonExists()) { return; }
 
-            GameObject selectCharacterEditor_Button = CloneSelectButton();
+            selectCharacterEditor_Button = CloneSelectButton();
             CustomizeClonedButton(selectCharacterEditor_Button);
             SetButtonOnClickEvent(selectCharacterEditor_Button);
         }
@@ -43,6 +44,7 @@ namespace CharacterEditor
         private static void CustomizeClonedButton(GameObject selectCharacterEditor_Button)
         {
             selectCharacterEditor_Button.name = "Button_Select_CharacterEditor";
+            selectCharacterEditor_Button.transform.Find("Text").GetComponent<Text>().text = "Character Editor";
             selectCharacterEditor_Button.transform.SetParent(originalSelectButton.transform.parent);
             selectCharacterEditor_Button.transform.localScale = originalSelectButton.transform.localScale;
             selectCharacterEditor_Button.transform.localPosition = new Vector3(originalSelectButton.transform.localPosition.x * 3.178f, 0, 0);
