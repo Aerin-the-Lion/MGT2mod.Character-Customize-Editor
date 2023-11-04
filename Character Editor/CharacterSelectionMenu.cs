@@ -10,6 +10,12 @@ namespace CharacterEditor
         static public characterScript personalCharacterScript;
         static public GameObject clonedCharacterObject;
 
+        public static void Init()
+        {
+            if (!Main.CFG_IS_ENABLED.Value) { return; }
+            CharacterSelectionMenuButtonHandler.AddCharacterEditorButtonToPersonalMenu();
+        }
+
         public static void SetClonedCharacter()
         {
             clonedCharacterObject = UnityEngine.Object.Instantiate(personalCharacterScript.gameObject);
@@ -45,14 +51,8 @@ namespace CharacterEditor
         /// </summary>
         public static void DeleteUnimplementedUI()
         {
-            CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGStats").gameObject.SetActive(false);
+            //CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGStats").gameObject.SetActive(false);
             CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGPerks").gameObject.SetActive(false);
-        }
-
-        public static void Init()
-        {
-            if (!Main.CFG_IS_ENABLED.Value) { return; }
-            CharacterSelectionMenuButtonHandler.AddCharacterEditorButtonToPersonalMenu();
         }
 
         static bool IsNewGameCharacter(GameObject character) => character.name == "CHARNEWGAME";
@@ -66,7 +66,7 @@ namespace CharacterEditor
         /// </summary>
         /// <param name="__instance">Menu_NewGameCEOのインスタンス(Character Editor)</param>
         /// <param name="___character">ロードするキャラクターオブジェクト</param>
-        public static void ImportExistingCharacter(Menu_NewGameCEO __instance, GameObject ___character)
+        public static void ImportExistingCharacter(Menu_NewGameCEO CharacterEditor, GameObject ___character)
         {
             GameObject character = clonedCharacterObject;
             ___character = character;
@@ -74,53 +74,54 @@ namespace CharacterEditor
             characterScript characterScript = character.GetComponent<characterScript>();
 
             // キャラクターの属性をCharacter Editorに適用
-            __instance.uiObjects[12].GetComponent<InputField>().text = characterScript.myName;
-            __instance.beruf = characterScript.beruf;
-            __instance.s_skills = characterScript.GetBestSkillValue();
-            __instance.s_gamedesign = characterScript.s_gamedesign;
-            __instance.s_programmieren = characterScript.s_programmieren;
-            __instance.s_grafik = characterScript.s_grafik;
-            __instance.s_sound = characterScript.s_sound;
-            __instance.s_pr = characterScript.s_pr;
-            __instance.s_gametests = characterScript.s_gametests;
-            __instance.s_technik = characterScript.s_technik;
-            __instance.s_forschen = characterScript.s_forschen;
+            CharacterEditor.uiObjects[12].GetComponent<InputField>().text = characterScript.myName;
+            CharacterEditor.beruf = characterScript.beruf;                      //職業
+            CharacterEditor.s_gamedesign = characterScript.s_gamedesign;        //ゲームデザイン, Game Design
+            CharacterEditor.s_programmieren = characterScript.s_programmieren;  //プログラミング, Programming
+            CharacterEditor.s_grafik = characterScript.s_grafik;                //グラフィック, Graphics
+            CharacterEditor.s_sound = characterScript.s_sound;                  //音楽, Music & Sound
+            CharacterEditor.s_pr = characterScript.s_pr;                        //Promotion, Marketing & Support
+            CharacterEditor.s_gametests = characterScript.s_gametests;          //ゲームテスト, Game Tests
+            CharacterEditor.s_technik = characterScript.s_technik;              //ハードウェア, Hardware
+            CharacterEditor.s_forschen = characterScript.s_forschen;            //研究, Research
+
+            CharacterEditor.s_skills = 0;   //残りのスキルポイント
 
 
             //Perk処理
-            for (int i = 0; i < __instance.perks.Length; i++)
+            for (int i = 0; i < CharacterEditor.perks.Length; i++)
             {
                 if (characterScript.perks[i])
                 {
-                    __instance.perks[i] = true;
+                    CharacterEditor.perks[i] = true;
                 }
                 else
                 {
-                    __instance.perks[i] = false;
+                    CharacterEditor.perks[i] = false;
                 }
             }
 
             if (characterScript.male)
             {
-                __instance.male = true;
+                CharacterEditor.male = true;
             }
             else
             {
-                __instance.male = false;
+                CharacterEditor.male = false;
             }
 
-            __instance.body = characterScript.model_body;
-            __instance.hair = characterScript.model_hair;
-            __instance.eyes = characterScript.model_eyes;
-            __instance.beard = characterScript.model_beard;
-            __instance.colorSkin = characterScript.model_skinColor;
-            __instance.colorHair = characterScript.model_hairColor;
-            __instance.colorShirt = characterScript.model_ShirtColor;
-            __instance.colorHose = characterScript.model_HoseColor;
-            __instance.colorAdd1 = characterScript.model_Add1Color;
+            CharacterEditor.body = characterScript.model_body;
+            CharacterEditor.hair = characterScript.model_hair;
+            CharacterEditor.eyes = characterScript.model_eyes;
+            CharacterEditor.beard = characterScript.model_beard;
+            CharacterEditor.colorSkin = characterScript.model_skinColor;
+            CharacterEditor.colorHair = characterScript.model_hairColor;
+            CharacterEditor.colorShirt = characterScript.model_ShirtColor;
+            CharacterEditor.colorHose = characterScript.model_HoseColor;
+            CharacterEditor.colorAdd1 = characterScript.model_Add1Color;
 
 
-            CharacterEditorInstance = __instance;
+            CharacterEditorInstance = CharacterEditor;
             createdCharacter = ___character;
         }
 

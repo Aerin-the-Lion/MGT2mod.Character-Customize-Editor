@@ -20,6 +20,7 @@ namespace CharacterEditor
             CharacterEditorManager.Init();
             CharacterSelectionMenu.Init();
 
+            //カメラを無効化
             if (CameraManager.CharacterEditorCamera == null) { return; }
             if (CameraManager.CharacterEditorCamera)
             {
@@ -42,6 +43,7 @@ namespace CharacterEditor
         [HarmonyPostfix, HarmonyPatch(typeof(Menu_Start), "OnEnable")]
         public static void OnGameStart(splashScript __instance)
         {
+            //開始でカメラを初期化
             CameraManager.InitializeCamera();
         }
 
@@ -54,7 +56,10 @@ namespace CharacterEditor
         [HarmonyLib.HarmonyPatch(typeof(Menu_PersonalView), "SetData")]
         public static void Menu_PersonalView_Start_Postfix(Menu_PersonalView __instance, characterScript ___cS_)
         {
+            //キャラクターのオブジェクトを取得
             CharacterSelectionMenu.personalCharacterScript = ___cS_;
+
+            //こうしないとボタンの名前が初期化されて変わる
             CharacterSelectionMenuButtonHandler.selectCharacterEditor_Button.transform.Find("Text").GetComponent<UnityEngine.UI.Text>().text = "Character Editor";
         }
     }

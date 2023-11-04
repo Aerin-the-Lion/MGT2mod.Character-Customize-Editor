@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace CharacterEditor
 {
-    public class CharacterEditorManager: MonoBehaviour
+    public class CharacterEditorManager : MonoBehaviour
     {
         //static public bool isActivated = false;
         static public GameObject CharacterEditor;
@@ -13,7 +13,7 @@ namespace CharacterEditor
         {
             Transform parentTransform = GameObject.Find("CanvasInGameMenu").transform;
             Transform existingCharacterEditorTransform = parentTransform.Find("Character Editor");
-            if (existingCharacterEditorTransform == null) 
+            if (existingCharacterEditorTransform == null)
             {
                 return false;
             }
@@ -95,7 +95,7 @@ namespace CharacterEditor
             int index = bodyType;
             if (CharacterEditor.male)
             {
-                prehab = cCS_.charGfxMales[index] ;
+                prehab = cCS_.charGfxMales[index];
             }
             else
             {
@@ -104,19 +104,33 @@ namespace CharacterEditor
             return prehab;
         }
 
+        static void ImportNewSkillSetting(Menu_NewGameCEO CharacterEditor, characterScript original)
+        {
+            original.beruf = CharacterEditor.beruf;                     //職業
+            original.s_gamedesign = CharacterEditor.s_gamedesign;       //ゲームデザイン, Game Design
+            original.s_programmieren = CharacterEditor.s_programmieren; //プログラミング, Programming
+            original.s_grafik = CharacterEditor.s_grafik;               //グラフィック, Graphics
+            original.s_sound = CharacterEditor.s_sound;                 //音楽, Music & Sound
+            original.s_pr = CharacterEditor.s_pr;                       //Promotion, Marketing & Support
+            original.s_gametests = CharacterEditor.s_gametests;         //ゲームテスト, Game Tests
+            original.s_technik = CharacterEditor.s_technik;             //ハードウェア, Hardware
+            original.s_forschen = CharacterEditor.s_forschen;           //研究, Research
+        }
+
         static void ImportNewModelSetting(Menu_NewGameCEO CharacterEditor, characterScript original)
         {
-            original.male = CharacterEditor.male;
-            original.model_body = CharacterEditor.body;
-            original.model_eyes = CharacterEditor.eyes;
-            original.model_hair = CharacterEditor.hair;
-            original.model_beard = CharacterEditor.beard;
-            original.model_skinColor = CharacterEditor.colorSkin;
-            original.model_hairColor = CharacterEditor.colorHair;
-            original.model_beardColor = CharacterEditor.colorHair;
-            original.model_HoseColor = CharacterEditor.colorHose;
-            original.model_ShirtColor = CharacterEditor.colorShirt;
-            original.model_Add1Color = CharacterEditor.colorAdd1;
+            original.myName = CharacterEditor.uiObjects[12].GetComponent<InputField>().text;
+            original.male = CharacterEditor.male;                       //性別, Gender
+            original.model_body = CharacterEditor.body;                 //体型, Body
+            original.model_eyes = CharacterEditor.eyes;                 //目, Eyes
+            original.model_hair = CharacterEditor.hair;                 //髪型, Hair
+            original.model_beard = CharacterEditor.beard;               //髭, Beard
+            original.model_skinColor = CharacterEditor.colorSkin;       //肌色, Skin Color
+            original.model_hairColor = CharacterEditor.colorHair;       //髪色, Hair Color
+            original.model_beardColor = CharacterEditor.colorHair;      //髭色, Beard Color, ただし髭の色は髪の色と同じ
+            original.model_HoseColor = CharacterEditor.colorHose;       //ズボンの色, Hose Color
+            original.model_ShirtColor = CharacterEditor.colorShirt;     //シャツの色, Shirt Color
+            original.model_Add1Color = CharacterEditor.colorAdd1;       //アクセサリーの色, Accessory Color
         }
         public static void ImportMovementScript(movementScript oldMovementScript, characterScript original, GameObject newPrehab)
         {
@@ -140,24 +154,24 @@ namespace CharacterEditor
             characterScript original = CharacterSelectionMenu.personalCharacterScript;
             GameObject originalObj = original.gameObject;
             Menu_NewGameCEO CharacterEditor = CharacterSelectionMenu.CharacterEditorInstance.GetComponent<Menu_NewGameCEO>();
-            
+
+            //既存のprehabの設定などを取得
             GameObject oldPrehab = originalObj.transform.GetChild(0).gameObject;
-            //oldPrehabの位置情報を取得
             Vector3 oldPrehabPosition = oldPrehab.transform.position;
-            //oldPrehabの回転情報を取得
             Quaternion oldPrehabRotation = oldPrehab.transform.rotation;
-            //oldPrehabのスケール情報を取得
             Vector3 oldPrehabScale = oldPrehab.transform.localScale;
-            //oldPrehabのmovementScriptを取得
             movementScript oldMovementScript = oldPrehab.GetComponent<movementScript>();
 
             //新しいprehabを追加
             int bodyType = CharacterEditor.body;
             GameObject prehab = GetPrehabMaterialOfCharacter(CharacterEditor, bodyType);
-            GameObject newPrehab = UnityEngine.Object.Instantiate<GameObject>(prehab, oldPrehabPosition, oldPrehabRotation, originalObj.transform);
+            GameObject newPrehab = Instantiate<GameObject>(prehab, oldPrehabPosition, oldPrehabRotation, originalObj.transform);
 
             //新しいキャラクターモデルの設定を反映
             ImportNewModelSetting(CharacterEditor, original);
+            //新しいスキルの設定を反映
+            ImportNewSkillSetting(CharacterEditor, original);
+            //movementScriptを初期化
             ImportMovementScript(oldMovementScript, original, newPrehab);
             characterGFXScript gFX = newPrehab.GetComponent<characterGFXScript>();
             gFX.Init(true);
@@ -219,6 +233,15 @@ namespace CharacterEditor
         {
             if (!Main.CFG_IS_ENABLED.Value) { return; }
             InitializeCharacterEditor();
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Menu_NewGameCEO), "Update")]
+        public static bool OnUpdateMenu_NewGameCEO_DisableSkillpointCap(Menu_NewGameCEO __instance)
+        {
+            if (!Main.CFG_IS_ENABLED.Value) { return true; }
+            if (__instance.name != "Character Editor") { return true; }
+            return false;
         }
     }
 }
