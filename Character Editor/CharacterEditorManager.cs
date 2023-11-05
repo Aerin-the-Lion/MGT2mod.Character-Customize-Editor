@@ -1,14 +1,26 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using HarmonyLib;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace CharacterEditor
 {
     public class CharacterEditorManager : MonoBehaviour
     {
-        //static public bool isActivated = false;
         static public GameObject CharacterEditor;
-        static public int hierarchyIndex;
+        static public int HierarchyIndex;
+        static public float MaxSkillCap;
+        static public int MaxPerksAmount;
+
+        static private sfxScript sfx_;
+        static private void FindScripts()
+        {
+            if (sfx_ == null)
+            {
+                sfx_ = GameObject.Find("SFX").GetComponent<sfxScript>();
+            }
+        }
         static bool IsExistedCharacterEditor()
         {
             Transform parentTransform = GameObject.Find("CanvasInGameMenu").transform;
@@ -37,13 +49,20 @@ namespace CharacterEditor
             CharacterEditor.transform.SetParent(menu_NewGameCEO.transform.parent);
             CharacterEditor.transform.localPosition = menu_NewGameCEO.transform.localPosition;
             CharacterEditor.transform.localScale = menu_NewGameCEO.transform.localScale;
+            //階層がおかしくなるので、Character EditorをMenu_NewGameCEOの下に置く
+            CharacterEditor.transform.SetSiblingIndex(menu_NewGameCEO.transform.GetSiblingIndex());
             CharacterEditor.name = "Character Editor";
-            hierarchyIndex = GetHierarchyIndex(CharacterEditor);
+            HierarchyIndex = GetHierarchyIndex(CharacterEditor);
 
             ModifyCharacterEditor_Buttons(CharacterEditor);
         }
 
-        //Characterが使用しているPrehabを取得する関数
+        /// <summary>
+        /// Characterが使用しているPrehabを取得する関数
+        /// ただし、現在使用していません
+        /// </summary>
+        /// <param name="original"></param>
+        /// <returns></returns>
         //例えば、original.transform.GetChild(0)が、characterMale19_MAT(Clone)がある場合は、9を返すswitch文, min = 0, max = 9
         //original.maleがfalseの場合で、characterFemale08_MAT(Clone)がある場合は、7を返すswitch文, min = 0, max = 7
         static int FindPrehabIndexOfCharacter(GameObject original)
@@ -87,6 +106,12 @@ namespace CharacterEditor
             return result;
         }
 
+        /// <summary>
+        /// キャラクターのPrehabをbodyTypeによって取得する関数
+        /// </summary>
+        /// <param name="CharacterEditor"></param>
+        /// <param name="bodyType"></param>
+        /// <returns></returns>
         static GameObject GetPrehabMaterialOfCharacter(Menu_NewGameCEO CharacterEditor, int bodyType)
         {
             createCharScript cCS_ = Traverse.Create(CharacterEditor).Field<createCharScript>("cCS_").Value;
@@ -104,6 +129,19 @@ namespace CharacterEditor
             return prehab;
         }
 
+        static void ImportNewPerksSetting(Menu_NewGameCEO CharacterEditor, characterScript original)
+        {
+            for (int i = 0; i < original.perks.Length; i++)
+            {
+                original.perks[i] = CharacterEditor.perks[i];
+            }
+        }
+
+        /// <summary>
+        /// Character Editorのスキル設定を既存のキャラクターに反映する関数
+        /// </summary>
+        /// <param name="CharacterEditor"></param>
+        /// <param name="original"></param>
         static void ImportNewSkillSetting(Menu_NewGameCEO CharacterEditor, characterScript original)
         {
             original.beruf = CharacterEditor.beruf;                     //職業
@@ -117,6 +155,11 @@ namespace CharacterEditor
             original.s_forschen = CharacterEditor.s_forschen;           //研究, Research
         }
 
+        /// <summary>
+        /// Character Editorのモデル設定を既存のキャラクターに反映する関数
+        /// </summary>
+        /// <param name="CharacterEditor"></param>
+        /// <param name="original"></param>
         static void ImportNewModelSetting(Menu_NewGameCEO CharacterEditor, characterScript original)
         {
             original.myName = CharacterEditor.uiObjects[12].GetComponent<InputField>().text;
@@ -132,6 +175,13 @@ namespace CharacterEditor
             original.model_ShirtColor = CharacterEditor.colorShirt;     //シャツの色, Shirt Color
             original.model_Add1Color = CharacterEditor.colorAdd1;       //アクセサリーの色, Accessory Color
         }
+
+        /// <summary>
+        /// 既存キャラクターに新規プレハブの諸々を適用する関数
+        /// </summary>
+        /// <param name="oldMovementScript"></param>
+        /// <param name="original"></param>
+        /// <param name="newPrehab"></param>
         public static void ImportMovementScript(movementScript oldMovementScript, characterScript original, GameObject newPrehab)
         {
             movementScript movementScript = original.gameObject.GetComponent<movementScript>();
@@ -142,13 +192,14 @@ namespace CharacterEditor
             movementScript.sfx_ = GameObject.Find("SFX").GetComponent<sfxScript>();
             movementScript.clipS_ = main_.GetComponent<clipScript>();
             movementScript.mapS_ = main_.GetComponent<mapScript>();
-            //Traverse.Create(movementScript).Method("Init").GetValue();
-
             movementScript.charGFX = newPrehab;
             movementScript.charAnimation = movementScript.charGFX.GetComponent<Animator>();
             Traverse.Create(movementScript).Method("InitPathfinding").GetValue();
         }
 
+        /// <summary>
+        /// Character EditorをYesボタンで決定した際に、変更内容を既存のキャラクターに反映する関数
+        /// </summary>
         public static void SetCreatedToOriginalCharacter()
         {
             characterScript original = CharacterSelectionMenu.personalCharacterScript;
@@ -171,6 +222,8 @@ namespace CharacterEditor
             ImportNewModelSetting(CharacterEditor, original);
             //新しいスキルの設定を反映
             ImportNewSkillSetting(CharacterEditor, original);
+            //新しいPerkの設定を反映
+            ImportNewPerksSetting(CharacterEditor, original);
             //movementScriptを初期化
             ImportMovementScript(oldMovementScript, original, newPrehab);
             characterGFXScript gFX = newPrehab.GetComponent<characterGFXScript>();
@@ -189,6 +242,11 @@ namespace CharacterEditor
             }
         }
 
+        /// <summary>
+        /// Character Editorのボタンの処理を変更する関数
+        /// Yes, Closeボタンの処理を変更する
+        /// </summary>
+        /// <param name="CharacterEditor"></param>
         static void ModifyCharacterEditor_Buttons(GameObject CharacterEditor)
         {
             //Button_Yes
@@ -229,19 +287,308 @@ namespace CharacterEditor
             return -1;
         }
 
+        static public float GetMaxSkillCap()
+        {
+            characterScript characterScript = new characterScript();
+            Traverse traverse = Traverse.Create(characterScript);
+            int i = 0;
+            characterScript.beruf = i;
+            MaxSkillCap = traverse.Method("GetSkillCap_Skill", new Type[] { typeof(int)}).GetValue<float>(i);
+            return MaxSkillCap;
+        }
+
+        /// <summary>
+        /// カウントを増減するメソッド
+        /// </summary>
+        /// <param name="isIncrement"></param>
+        public static float ChangeCount(bool isIncrement, float skillPoint, float totalSkillPoints)
+        {
+            float changeValue = Main.SkillPointIncrementValue.Value;
+
+            // 端数を確認して、必要に応じてchangeValueを調整
+            if(totalSkillPoints != 0 && totalSkillPoints < changeValue)
+            {
+                changeValue = totalSkillPoints;
+            }
+
+            // カウントを増減
+            if (isIncrement)
+            {
+                skillPoint += changeValue;
+            }
+            else
+            {
+                skillPoint -= changeValue;
+            }
+
+            return skillPoint;
+        }
+
+        /// <summary>
+        /// Modによって追加されたPerk処理を行う関数
+        /// </summary>
+        /// <returns></returns>
+        private static int GetMaximumPerksAllowed()
+        {
+            int maxPerksAmount = 0;
+
+            //個人のPerkを元に、Perkの数を取得するかどうか
+            if (Main.IsIndividualPerkCountApplied.Value)
+            {
+                foreach (bool perk in CharacterSelectionMenu.personalCharacterScript.perks)
+                {
+                    if (perk)
+                    {
+                        maxPerksAmount++;
+                    }
+                }
+                if(CharacterSelectionMenu.personalCharacterScript.myID == 1)
+                {
+                    //プレイヤーキャラCEOの場合は、Perkの数を1つ増やす
+                    maxPerksAmount--;
+                }
+            }
+            else
+            {
+                //設定したPerkの許容値を取得する
+                maxPerksAmount = Main.TotalPerksCount.Value;
+            }
+
+            if (CharacterSelectionMenu.personalCharacterScript.myID == 1)
+            {
+                //プレイヤーキャラCEOの場合は、Perkの数を1つ増やす
+                maxPerksAmount++;
+            }
+
+            Debug.Log("maxPerksAmount: " + maxPerksAmount.ToString());
+            return maxPerksAmount;
+        }
+
+
+        // ---------------- Initialize ----------------
         public static void Init()
         {
             if (!Main.CFG_IS_ENABLED.Value) { return; }
             InitializeCharacterEditor();
         }
 
+
+        // ---------------- Harmony Patch ----------------
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Menu_NewGameCEO), "BUTTON_AddStats")]
+        public static bool OnPushBUTTON_AddStats_NewGameCEO_ChangeAmount(Menu_NewGameCEO __instance, int i)
+        {
+            // Config及びCharacter Customization Editorの条件を確認
+            if (!Main.CFG_IS_ENABLED.Value) { return true; }
+            if (!CharacterSelectionMenu.IsCharacterEditor(__instance.gameObject)) { return true; }
+
+
+            Traverse traverse = Traverse.Create(__instance);
+            var GetSkillCap = traverse.Method("GetSkillCap").GetValue<float>();
+            var iAddStats = traverse.Method("iAddStats", new Type[] { typeof(int) }).GetValue<IEnumerator>(i);
+            var InitSkills = traverse.Method("InitSkills").GetValue();
+
+            GetMaxSkillCap();
+            FindScripts();
+
+            // ------- 以下、元の処理の改変 -------
+            sfx_.PlaySound(3, true);
+            if (__instance.s_skills <= 0f)
+            {
+                return false;
+            }
+            switch (i)
+            {
+                case 0:
+                    if (__instance.s_gamedesign < MaxSkillCap && __instance.beruf == 0)
+                    {
+                        __instance.s_gamedesign = ChangeCount(true, __instance.s_gamedesign, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_gamedesign += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_gamedesign < GetSkillCap && __instance.beruf != 0)
+                    {
+                        __instance.s_gamedesign = ChangeCount(true, __instance.s_gamedesign, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_gamedesign += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+                case 1:
+                    if (__instance.s_programmieren < MaxSkillCap && __instance.beruf == 1)
+                    {
+                        __instance.s_programmieren = ChangeCount(true, __instance.s_programmieren, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_programmieren += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_programmieren < GetSkillCap && __instance.beruf != 1)
+                    {
+                        __instance.s_programmieren = ChangeCount(true, __instance.s_programmieren, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_programmieren += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+                case 2:
+                    if (__instance.s_grafik < MaxSkillCap && __instance.beruf == 2)
+                    {
+                        __instance.s_grafik = ChangeCount(true, __instance.s_grafik, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_grafik += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_grafik < GetSkillCap && __instance.beruf != 2)
+                    {
+                        __instance.s_grafik = ChangeCount(true, __instance.s_grafik, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_grafik += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+                case 3:
+                    if (__instance.s_sound < MaxSkillCap && __instance.beruf == 3)
+                    {
+                        __instance.s_sound = ChangeCount(true, __instance.s_sound, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_sound += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_sound < GetSkillCap && __instance.beruf != 3)
+                    {
+                        __instance.s_sound = ChangeCount(true, __instance.s_sound, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_sound += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+                case 4:
+                    if (__instance.s_pr < MaxSkillCap && __instance.beruf == 4)
+                    {
+                        __instance.s_pr = ChangeCount(true, __instance.s_pr, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_pr += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_pr < GetSkillCap && __instance.beruf != 4)
+                    {
+                        __instance.s_pr = ChangeCount(true, __instance.s_pr, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_pr += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+                case 5:
+                    if (__instance.s_gametests < MaxSkillCap && __instance.beruf == 5)
+                    {
+                        __instance.s_gametests = ChangeCount(true, __instance.s_gametests, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_gametests += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_gametests < GetSkillCap && __instance.beruf != 5)
+                    {
+                        __instance.s_gametests = ChangeCount(true, __instance.s_gametests, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_gametests += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+                case 6:
+                    if (__instance.s_technik < MaxSkillCap && __instance.beruf == 6)
+                    {
+                        __instance.s_technik = ChangeCount(true, __instance.s_technik, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_technik += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_technik < GetSkillCap && __instance.beruf != 6)
+                    {
+                        __instance.s_technik = ChangeCount(true, __instance.s_technik, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_technik += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+                case 7:
+                    if (__instance.s_forschen < MaxSkillCap && __instance.beruf == 7)
+                    {
+                        __instance.s_forschen = ChangeCount(true, __instance.s_forschen, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_forschen += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    if (__instance.s_forschen < GetSkillCap && __instance.beruf != 7)
+                    {
+                        __instance.s_forschen = ChangeCount(true, __instance.s_forschen, __instance.s_skills);
+                        __instance.s_skills = ChangeCount(false, __instance.s_skills, __instance.s_skills);
+                        //__instance.s_forschen += 5f;
+                        //__instance.s_skills -= 5f;
+                    }
+                    break;
+            }
+            traverse.Method("InitSkills").GetValue();
+            __instance.StartCoroutine(iAddStats);
+
+            return false;
+        }
+
+        /// <summary>
+        /// CEO作成時のときに、スキルポイント上限を50に設定してあった処理を無効化する
+        /// </summary>
+        /// <param name="__instance"></param>
+        /// <returns></returns>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Menu_NewGameCEO), "Update")]
         public static bool OnUpdateMenu_NewGameCEO_DisableSkillpointCap(Menu_NewGameCEO __instance)
         {
             if (!Main.CFG_IS_ENABLED.Value) { return true; }
-            if (__instance.name != "Character Editor") { return true; }
+            if (!CharacterSelectionMenu.IsCharacterEditor(__instance.gameObject)) { return true; }
             return false;
+        }
+
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Menu_NewGameCEO), "Init")]
+        public static void OnUpdateMenu_NewGameCEO_CalcPerks(Menu_NewGameCEO __instance)
+        {
+            //Perkの数を確認
+            MaxPerksAmount = 0;
+            MaxPerksAmount = GetMaximumPerksAllowed();
+        }
+
+        /// <summary>
+        /// CEO作成時のときに、CEOかどうかの処理をする。
+        /// </summary>
+        /// <param name="__instance"></param>
+        /// <returns></returns>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Menu_NewGameCEO), "Init")]
+        public static void OnUpdateMenu_NewGameCEO_NoCeoPerkWhenIsNotCEO(Menu_NewGameCEO __instance)
+        {
+            if (!Main.CFG_IS_ENABLED.Value) { return; }
+            if (!CharacterSelectionMenu.IsCharacterEditor(__instance.gameObject)) { return; }
+
+            if(CharacterSelectionMenu.personalCharacterScript.myID == 1 && !__instance.perks[0])
+            {
+                __instance.BUTTON_Perk(0);
+            }
+
+            //CEO出ない場合は、CEOのPerkを選択できないようにする
+            if (CharacterSelectionMenu.personalCharacterScript.myID != 1 && __instance.perks[0])
+            {
+                __instance.BUTTON_Perk(0);
+            }
+
+            //無理やり動かせるようにする
+            for (int l = 0; l < __instance.uiObjects[24].transform.childCount; l++)
+            {
+                if (__instance.uiObjects[24].transform.childCount > l)
+                {
+                    __instance.uiObjects[24].transform.GetChild(l).GetComponent<Button>().interactable = true;
+                }
+            }
         }
     }
 }

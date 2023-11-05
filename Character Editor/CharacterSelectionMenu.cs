@@ -41,6 +41,9 @@ namespace CharacterEditor
             mainMenuScript.Init();
         }
 
+        /// <summary>
+        /// Character Editorのタイトルを初期化する
+        /// </summary>
         public static void InitializeTitleOfCharacterEditor()
         {
             string title = "Character Editor : Customize your character";
@@ -52,14 +55,15 @@ namespace CharacterEditor
         public static void DeleteUnimplementedUI()
         {
             //CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGStats").gameObject.SetActive(false);
-            CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGPerks").gameObject.SetActive(false);
+            //CharacterEditorManager.CharacterEditor.transform.GetChild(0).Find("BGPerks").gameObject.SetActive(false);
         }
 
         static bool IsNewGameCharacter(GameObject character) => character.name == "CHARNEWGAME";
-        static bool IsCharacterEditor(GameObject me) => me.name == "Character Editor";
+        public static bool IsCharacterEditor(GameObject me) => me.name == "Character Editor";
 
         public static Menu_NewGameCEO CharacterEditorInstance;
         public static GameObject createdCharacter;
+        public static float TotalRemainingSkillPoints;
 
         /// <summary>
         /// 既存のキャラクターデータをロードして、Character Editorに適用します。
@@ -85,7 +89,13 @@ namespace CharacterEditor
             CharacterEditor.s_technik = characterScript.s_technik;              //ハードウェア, Hardware
             CharacterEditor.s_forschen = characterScript.s_forschen;            //研究, Research
 
-            CharacterEditor.s_skills = 0;   //残りのスキルポイント
+            //スキルポイントの計算
+            float multiplier = Main.SkillPointDecreaseMultiplierOnChange.Value;
+            float totalSkillpoints = characterScript.s_gamedesign + characterScript.s_programmieren + characterScript.s_grafik + characterScript.s_sound
+                                        + characterScript.s_pr + characterScript.s_gametests + characterScript.s_technik + characterScript.s_forschen;   //合計スキルポイント
+            TotalRemainingSkillPoints = totalSkillpoints * multiplier;   //合計スキルポイント * 減少率
+            TotalRemainingSkillPoints = TotalRemainingSkillPoints - totalSkillpoints; //残りのスキルポイント
+            CharacterEditor.s_skills = TotalRemainingSkillPoints;   //残りのスキルポイント
 
 
             //Perk処理

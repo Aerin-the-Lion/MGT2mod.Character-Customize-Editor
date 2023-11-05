@@ -60,7 +60,7 @@ namespace CharacterEditor
             CharacterSelectionMenu.InitializeCharacterEditorWithSelectedCharacter();
             CameraManager.EnableCamera();
             GameObject canvasInGameMenu = GameObject.Find("CanvasInGameMenu").gameObject;
-            canvasInGameMenu.transform.GetChild(CharacterEditorManager.hierarchyIndex).gameObject.SetActive(true);
+            canvasInGameMenu.transform.GetChild(CharacterEditorManager.HierarchyIndex).gameObject.SetActive(true);
             CharacterSelectionMenu.InitializeTitleOfCharacterEditor();  //何故かここに置かないとタイトル変わらない？SetActiveするたびにタイトルが初期化されるみたいです。
         }
 
