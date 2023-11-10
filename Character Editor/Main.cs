@@ -3,7 +3,6 @@ using BepInEx.Configuration;
 using UnityEngine;
 using HarmonyLib;
 
-
 namespace CharacterEditor
 {
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
@@ -12,7 +11,7 @@ namespace CharacterEditor
     {
         public const string PluginGuid = "me.Aerin_the_Lion.Mad_Games_Tycoon_2.plugins.CharacterEditor";
         public const string PluginName = "Character Editor";
-        public const string PluginVersion = "1.1.0.0";
+        public const string PluginVersion = "1.1.2.0";
 
         public static ConfigEntry<bool> CFG_IS_ENABLED { get; private set; }
         public static ConfigEntry<float> SkillPointDecreaseMultiplierOnChange { get; private set; }

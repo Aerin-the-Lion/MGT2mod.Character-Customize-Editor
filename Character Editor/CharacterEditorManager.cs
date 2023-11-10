@@ -364,6 +364,29 @@ namespace CharacterEditor
             return maxPerksAmount;
         }
 
+        private static void ResizeGridLayoutGroupOnPanel(Transform panelTransform)
+        {
+            float x = 37;
+            float y = 37;
+            panelTransform.GetComponent<GridLayoutGroup>().cellSize = new Vector2(x, y);
+        }
+
+        private static void EnableHiddenPerksButtons(Menu_NewGameCEO __instance)
+        {
+            Transform PanelPerksButtonsTransform = __instance.gameObject.transform.transform.Find("WindowMain/BGPerks/PanelPerksButtons").transform;
+
+            //PanelPerksButtonsTransformのChildを全てSetActive(true)にする
+            foreach (Transform child in PanelPerksButtonsTransform)
+            {
+                if (!child.gameObject.activeSelf)
+                {
+                    child.gameObject.SetActive(true);
+                }
+            }
+
+            ResizeGridLayoutGroupOnPanel(PanelPerksButtonsTransform);
+        }
+
 
         // ---------------- Initialize ----------------
         public static void Init()
@@ -553,6 +576,9 @@ namespace CharacterEditor
         [HarmonyPatch(typeof(Menu_NewGameCEO), "Init")]
         public static void OnUpdateMenu_NewGameCEO_CalcPerks(Menu_NewGameCEO __instance)
         {
+            if (!Main.CFG_IS_ENABLED.Value) { return; }
+            if (!CharacterSelectionMenu.IsCharacterEditor(__instance.gameObject)) { return; }
+
             //Perkの数を確認
             MaxPerksAmount = 0;
             MaxPerksAmount = GetMaximumPerksAllowed();
@@ -589,6 +615,8 @@ namespace CharacterEditor
                     __instance.uiObjects[24].transform.GetChild(l).GetComponent<Button>().interactable = true;
                 }
             }
+
+            EnableHiddenPerksButtons(__instance);
         }
     }
 }

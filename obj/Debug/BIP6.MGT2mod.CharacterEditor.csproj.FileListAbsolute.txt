@@ -1,0 +1,2 @@
+C:\Users\admin\Documents\C#_Tool\MGT2mod.CharacterEditor\obj\Debug\BIP6.MGT2mod.CharacterEditor.csproj.AssemblyReference.cache
+C:\Users\admin\Documents\C#_Tool\MGT2mod.CharacterEditor\obj\Debug\BIP6.MGT2mod.CharacterEditor.csproj.CoreCompileInputs.cache

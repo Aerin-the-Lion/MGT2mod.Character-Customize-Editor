@@ -49,6 +49,7 @@ namespace CharacterEditor
             string title = "Character Editor : Customize your character";
             CharacterEditorManager.CharacterEditor.transform.GetChild(0).GetChild(2).GetChild(0).gameObject.GetComponent<Text>().text = title;
         }
+
         /// <summary>
         /// まぁいつかは実装するけど……あったらあったで面倒なので、今は削除しておく
         /// </summary>

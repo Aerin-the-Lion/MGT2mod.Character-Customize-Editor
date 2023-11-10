@@ -55,7 +55,7 @@ namespace CharacterEditor
         /// </summary>
         private static void OnSelectCharacterEditorButtonClicked()
         {
-            CharacterSelectionMenu.DeleteUnimplementedUI();
+            //CharacterSelectionMenu.DeleteUnimplementedUI();
             CharacterSelectionMenu.SetClonedCharacter();
             CharacterSelectionMenu.InitializeCharacterEditorWithSelectedCharacter();
             CameraManager.EnableCamera();
